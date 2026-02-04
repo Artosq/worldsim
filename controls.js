@@ -1,6 +1,4 @@
     $('#chart').hide();
-    $('.guiBottom').hide();
-    $('#counter').hide();
 
 
       $(document).on('keydown', function(event) {
@@ -54,4 +52,5 @@ function fastTick(){
 function pauseGame(){
   if(pause==true) pause = false
   else pause = true
+
 }
