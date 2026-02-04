@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Symulacja</title>
+    <style>
+        body{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: rgb(134, 78, 41) ;
+        }
+        .container{
+            width: 95vw;
+            height: auto;
+            border-radius: 20px;
+        }
+        .cell{
+            background-color: rgb(134, 78, 41) ;
+            width: 20px;
+            height: 20px;
+            float: left;
+            /*outline:3px solid rgba(0, 0, 0, 0.05);*/
+            
+        }
+        .marked{
+          filter: brightness(120%);
+        }
+        .grass{
+            background-color: rgb(6, 156, 6);
+            box-shadow: inset 4px 4px 2px rgba(0, 0, 0, 0.4);
+            /*background-image: url('grass.png');
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;*/
+        }
+        .corpse{
+            background-color: rgb(240, 153, 147);
+        }
+        .herbi{
+            background-color: rgb(251, 255, 14);
+        }
+        .carni{
+            background-color: rgb(214, 32, 32);
+        }
+        .picked {
+        /*box-shadow: inset 0px 0px 10px 10px rgba(0, 204, 255, 0.8);
+        filter: drop-shadow(0px 0px 10px rgb(255, 255, 255));*/
+        z-index: 200;
+        position: relative;
+        outline: 3px solid rgb(255, 255, 255);
+        }
+        .parent{
+        z-index: 199;
+        position: relative;
+        outline: 3px solid rgb(202, 106, 173);
+        }
+        .child{
+        z-index: 199;
+        position: relative;
+        outline: 3px solid rgb(112, 224, 118);
+        }
+        .sibling{
+        z-index: 199;
+        position: relative;
+        outline: 3px solid rgb(114, 108, 222);
+        }
+        .guiBottom{
+        outline: 3px solid rgba(0, 0, 0, 0.6);
+        box-shadow: 0px 0px 10px 10px rgba(0, 0, 0, 0.3);
+        border-radius: 20px;
+        bottom: 20px;
+        opacity: 0.9;
+        position: fixed;    /* Fixed dla stabilnej pozycji na ekranie */
+        z-index: 999;
+        background-color: rgb(57, 57, 57);
+        display: flex;
+        font-family: Arial, Helvetica, sans-serif;
+        }
+#chart {
+    position: fixed;    /* Zmieniamy na fixed, aby wykres nie przewijał się z siatką */
+    top: 10px;         /* Odstęp od góry */
+    left: 10px;        /* Odstęp od lewej (lewy górny róg) */
+    z-index: 1000;     /* Upewniamy się, że jest nad siatką */
+    width: 500px;
+    height: 200px;
+    background-color: rgb(57, 57, 57);
+    color: white;
+    outline: 3px solid rgba(0, 0, 0, 0.6);
+    box-shadow: 0px 0px 10px 10px rgba(0, 0, 0, 0.3);
+    border-radius: 20px;
+    opacity: 0.9;
+}
+
+#controls {
+    position: fixed;    /* Fixed dla stabilnej pozycji na ekranie */
+    bottom: 16px;      /* Odstęp od dołu */
+    left: 50%;         /* Przesunięcie do połowy szerokości */
+    transform: translateX(-50%); /* Idealne wyśrodkowanie względem własnej szerokości */
+    z-index: 1000;     /* Nad siatką */
+    width: 300px;
+    height: 80px;
+    color: white;
+    justify-content: center;
+    align-items: center;
+}
+        #slow,#fast{
+          margin: 5px;
+          width: 100px;
+          height: 60px;
+          background-color: rgb(41, 41, 41);
+          border-radius: 20px;
+          border: 3px solid rgba(0, 0, 0, 0.6);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+        #slow{
+          transform: rotate(180deg);
+        }
+        #fast{
+        }
+        #pause{
+          height: 60px;
+          width: 60px;
+          background-color: rgb(41, 41, 41);
+          border-radius: 20px;
+          margin: 5px;
+          outline: 3px solid rgba(0, 0, 0, 0.6);
+        }
+        #counter{
+          position: fixed;    /* Fixed dla stabilnej pozycji na ekranie */
+          bottom: 90px;      /* Odstęp od dołu */
+          left: 50%;         /* Przesunięcie do połowy szerokości */
+          transform: translateX(-50%); /* Idealne wyśrodkowanie względem własnej szerokości */
+          z-index: 999;     /* Nad siatką */
+          width: 150px;
+          height: 40px;
+          color: white;
+          display: flex;
+          justify-content: center;
+          align-items: top;
+          font-family: Arial, Helvetica, sans-serif;
+          font-size: 20px;
+          padding-top: 10px;
+          /*background-color: rgb(40, 16, 63);
+          opacity: 0.9;
+          border-radius: 12px;
+          outline: 3px solid rgba(0, 0, 0, 0.6);
+          box-shadow: 0px 0px 10px 10px rgba(0, 0, 0, 0.3);*/
+
+        }
+        #entityInfo{
+          right: 20px;
+          width: 400px;
+          height: 80px;
+          border-radius: 20px;
+          justify-content: center;
+          align-items: top;
+          align-items: center;
+          justify-content: left;
+        }
+        .arrows{
+          width: 80px;
+        }
+        #mojWykres{
+          width: inherit;
+          height: inherit;
+        }
+        .herbi,.carni,.corpse{
+          /*outline: 3px solid rgba(0, 0, 0, 0.25);*/
+          box-shadow: inset 5px 5px 5px rgba(0, 0, 0, 0.4);
+          border-radius: 25%;
+        }
+        #entityInfoHolo{
+          width: 60px;
+          height: 60px;
+          margin: 10px;
+        }
+        #entityInfoText{
+          width: 300px;
+          height: 60px;
+          overflow-y: hidden;
+          color: rgb(255, 255, 255);
+          font-size: 12px;
+          display: flex;
+        }
+    </style>
+
+    <script
+  src="https://code.jquery.com/jquery-3.7.1.js"
+  integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
+  crossorigin="anonymous"></script>
+
+  <script
+src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js">
+</script>
+
+  <script src="core_setup.js"></script> 
+
+  <script src="charts.js"></script> 
+  <script src="grass_random_gen.js"></script> 
+  <script src="grass_const.js"></script> 
+  <script src="herbi_const.js"></script> 
+  <script src="carni_const.js"></script> 
+  <script src="corpse_const.js"></script> 
+
+</head>
+<body>
+  <div id="chart"><canvas id="mojWykres"></canvas></div>
+  <div id="controls" class="guiBottom">
+    <div id="slow"><img src='arrows.png' class="arrows"></div>
+    <div id="pause"></div>
+    <div id="fast"><img src='arrows.png' class="arrows"></div>
+  </div>
+  <div id="counter"></div>
+  <div id="entityInfo" class="guiBottom">
+    <div id="entityInfoHolo"></div>
+    <div id="entityInfoText"></div>
+  </div>
+  <script src="controls.js"></script> 
+
+    <script>
+      
+  function RandomInt(min, max){
+    return Math.round(Math.random()*(max-min)+min);
+  }
+
+  function spawn(type,x,y,parent){
+    if(type == 'grass'){
+        if((x>=0 && x < worldSize.X)&&(y>=0 && y < worldSize.Y)){
+          if(!pola[x][y].grass){
+        let entity = new grassConst(x, y, RandomInt(0,20), RandomInt(50,150));
+        let div = $('#'+entity.positionX+'_'+entity.positionY);
+        $(div).addClass('grass');
+        pola[x][y].grass = true;
+        //entity.growing();
+        grassList.push(entity);
+        grassNum++;
+        }
+        }
+    }else if(type == "herbi")
+    {
+      if(!pola[x][y].herbi)
+      {
+        let entity = new herbivoresConst(x, y, RandomInt(60, 80), RandomInt(80,100 ), parent);
+        let div = $("#"+x+"_"+y);
+        $(div).addClass("herbi");
+        pola[x][y].herbi = true;
+        entity.evalueMove();
+        entityList.push(entity);
+        herbiNum++;
+      }
+    }else if(type == "carni")
+    {
+      if(!pola[x][y].carni)
+      {
+        let entity = new carnivoresConst(x, y, RandomInt(100, 120),RandomInt(90, 100), parent);
+        let div = $("#"+x+"_"+y);
+        $(div).addClass("carni");
+        pola[x][y].carni = true;
+        entity.evalueMove();
+        entityList.push(entity);
+        carniNum++;
+      }
+    }else if(type == "corpse")
+    {
+      if(!pola[x][y].corpse)
+      {
+        let entity = new corpseConst(x, y, RandomInt(20, 50));
+        let div = $("#"+x+"_"+y);
+        $(div).addClass("corpse");
+        pola[x][y].corpse = true;
+        entity.decaying();
+        corpseNum++;
+        herbiNum--;
+      }
+    }
+  }
+
+          for(let i = 0; i < grassCount; i++)
+  spawn('grass',RandomInt(0,worldSize.X-1),RandomInt(0,worldSize.Y-1));
+  for(let i = 0; i < herbivoreCount; i++)
+  spawn('herbi',RandomInt(0,worldSize.X-1),RandomInt(0,worldSize.Y-1));
+setTimeout(() => {
+for(let i = 0; i < carnivoreCount; i++)
+spawn('carni',RandomInt(0,worldSize.X-1),RandomInt(0,worldSize.Y-1));
+},tickSpeed*10)
+grassRandomGen()
+
+
+
+
+const canvas = document.getElementById('mojWykres');
+const ctx = canvas.getContext('2d');
+
+let maxObservedY = 0;
+let chartInterval = null;
+
+const chart = new Chart(ctx, {
+    type: 'bar', // Zmiana typu na słupkowy
+    data: {
+        labels: ['Trawa', 'Roślinożercy', 'Mięsożercy'], // Stałe etykiety na osi X
+        datasets: [{
+            label: 'Aktualna Populacja',
+            data: [0, 0, 0], // Startowe wartości
+            backgroundColor: [
+                'rgba(6, 156, 6, 0.6)',   // Zielony (Trawa)
+                'rgba(255, 205, 86, 0.6)', // Żółty (Roślinożercy)
+                'rgba(255, 99, 132, 0.6)'  // Czerwony (Mięsożercy)
+            ],
+            borderColor: [
+                'rgb(6, 156, 6)',
+                'rgb(255, 205, 86)',
+                'rgb(255, 99, 132)'
+            ],
+            borderWidth: 2
+        }]
+    },
+    options: {
+      layout: {
+        padding: {
+            bottom: 50 // Dodaje 20px wolnego miejsca na dole, aby etykiety się zmieściły
+        }
+    },
+        responsive: true,
+        // Konfiguracja płynnych przejść
+        animation: {
+            duration: tickSpeed/2, // Czas trwania ruchu słupka (ms)
+            easing: 'easeInOutQuart' // Płynne przyspieszenie i zwolnienie
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                // Stabilizacja skali Y
+                ticks: {
+                stepSize: 1, // Wymusza etykiety co 1 (0, 1, 2, 3...)
+                precision: 0 // Usuwa liczby po przecinku (np. 1.5)
+        }
+            }
+        },
+        plugins: {
+            legend: { display: false } // Ukrywamy legendę, bo etykiety są na dole
+        }
+    }
+});
+
+function updateChart() {
+    // Pobranie aktualnych wartości z Twojej symulacji
+    const currentData = [grassNum/100, herbiNum, carniNum];
+
+    // 1. Stabilizacja skali Y (nie maleje poniżej najwyższego zanotowanego punktu)
+    const currentMax = Math.max(...currentData);
+    if (currentMax > maxObservedY) {
+        maxObservedY = currentMax * 1.1;
+    }
+
+    // 2. Podmiana danych w wykresie
+    chart.data.datasets[0].data = currentData;
+
+    // 3. Aktualizacja z domyślną animacją (dla płynnego ruchu słupków)
+    chart.update(); 
+}
+
+function startChart() {
+    if (chartInterval) clearInterval(chartInterval);
+    chartInterval = setInterval(updateChart, tickSpeed*3);
+}
+
+// Uruchomienie
+startChart();
+
+    </script>
+</body>
+</html>
